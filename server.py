@@ -1622,7 +1622,7 @@ class DisplayControl(Resource):
 
     def get(self, status, option):
         try:
-            self.turn_on_off_monitor(status, option)
+            return self.turn_on_off_monitor(status, option)
         except:
             return "Error trying to turn on/off the display.", 500
 
