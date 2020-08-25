@@ -15,6 +15,8 @@ import time
 import traceback
 import yaml
 import uuid
+import os
+import io
 from base64 import b64encode
 from celery import Celery
 from datetime import datetime, timedelta
@@ -26,7 +28,7 @@ from os import getenv, listdir, makedirs, mkdir, path, remove, rename, statvfs, 
 from subprocess import check_output
 from urlparse import urlparse
 
-from flask import Flask, escape, make_response, render_template, request, send_from_directory, url_for, jsonify
+from flask import Flask, escape, make_response, render_template, request, send_from_directory, url_for, jsonify, send_file
 from flask_cors import CORS
 from flask_restful_swagger_2 import Api, Resource, Schema, swagger
 from flask_swagger_ui import get_swaggerui_blueprint
@@ -1588,6 +1590,33 @@ class ViewerCurrentAsset(Resource):
             return assets_helper.read(conn, current_asset_id)
 
 
+class Screenshot(Resource):
+    method_decorators = [authorized]
+
+    def get(self):
+        try:
+            scr = self.take_screenshot()
+            if scr is not None:
+                return scr
+            return "No screenshot was taken", 500
+        except:
+            return "Error trying to take screenshot, check if raspi2png is installed.", 500
+
+
+    def take_screenshot(self):
+        if os.path.exists("screenshot.png"):
+            os.unlink("screenshot.png")
+
+        os.system("raspi2png -p screenshot.png")
+        if os.path.exists("screenshot.png"):
+            with open("screenshot.png", 'rb') as img_file:
+                return send_file(
+                        io.BytesIO(img_file.read()),
+                        attachment_filename='monitor.png',
+                        mimetype='image/png'
+                )
+
+
 api.add_resource(Assets, '/api/v1/assets')
 api.add_resource(Asset, '/api/v1/assets/<asset_id>')
 api.add_resource(AssetsV1_1, '/api/v1.1/assets')
@@ -1607,6 +1636,7 @@ api.add_resource(UpgradeScreenly, '/api/v1/upgrade_screenly')
 api.add_resource(RebootScreenly, '/api/v1/reboot_screenly')
 api.add_resource(ShutdownScreenly, '/api/v1/shutdown_screenly')
 api.add_resource(ViewerCurrentAsset, '/api/v1/viewer_current_asset')
+api.add_resource(Screenshot, '/api/v1/screenshot')
 
 try:
     my_ip = get_node_ip()
