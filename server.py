@@ -1617,6 +1617,29 @@ class Screenshot(Resource):
                 )
 
 
+class DisplayControl(Resource):
+    method_decorators = [authorized]
+
+    def get(self, status, option):
+        try:
+            self.turn_on_off_monitor(status, option)
+        except:
+            return "Error trying to turn on/off the display.", 500
+
+
+    def turn_on_off_monitor(self, status, option): 
+        if option == 0:
+            os.system("vcgencmd display_power {}".format(status))
+        elif option == 1:
+            if status == 0:
+                status = "--off"
+            else:
+                status = "--preferred"
+            os.system("tvservice {}".format(status))
+        
+        return '', 200
+
+
 api.add_resource(Assets, '/api/v1/assets')
 api.add_resource(Asset, '/api/v1/assets/<asset_id>')
 api.add_resource(AssetsV1_1, '/api/v1.1/assets')
@@ -1637,6 +1660,7 @@ api.add_resource(RebootScreenly, '/api/v1/reboot_screenly')
 api.add_resource(ShutdownScreenly, '/api/v1/shutdown_screenly')
 api.add_resource(ViewerCurrentAsset, '/api/v1/viewer_current_asset')
 api.add_resource(Screenshot, '/api/v1/screenshot')
+api.add_resource(DisplayControl, '/api/v1/display/<status>/<option>')
 
 try:
     my_ip = get_node_ip()
