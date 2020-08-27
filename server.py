@@ -452,9 +452,10 @@ def prepare_asset(request, unique_name=False):
 
     if not asset['asset_id']:
         asset['asset_id'] = uuid.uuid4().hex
-        if uri.startswith('/'):
-            rename(uri, path.join(settings['assetdir'], asset['asset_id']))
-            uri = path.join(settings['assetdir'], asset['asset_id'])
+        
+    if uri.startswith('/'):
+        rename(uri, path.join(settings['assetdir'], asset['asset_id']))
+        uri = path.join(settings['assetdir'], asset['asset_id'])
 
     if 'youtube_asset' in asset['mimetype']:
         uri, asset['name'], asset['duration'] = download_video_from_youtube(uri, asset['asset_id'])
