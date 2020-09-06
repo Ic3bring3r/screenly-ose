@@ -1629,10 +1629,10 @@ class DisplayControl(Resource):
 
 
     def turn_on_off_monitor(self, status, option): 
-        if option == 0:
+        if int(option) == 0:
             os.system("vcgencmd display_power {}".format(status))
-        elif option == 1:
-            if status == 0:
+        elif int(option) == 1:
+            if int(status) == 0:
                 status = "--off"
             else:
                 status = "--preferred"
